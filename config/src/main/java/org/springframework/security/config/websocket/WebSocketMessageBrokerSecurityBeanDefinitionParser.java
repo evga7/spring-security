@@ -16,9 +16,7 @@
 
 package org.springframework.security.config.websocket;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.w3c.dom.Element;
@@ -311,6 +309,13 @@ public final class WebSocketMessageBrokerSecurityBeanDefinitionParser implements
 
 		private final boolean sameOriginDisabled;
 
+		private static final Set<String> CSRF_HANDSHAKE_HANDLER_CLASSES = new HashSet<>(Arrays.asList(
+				"org.springframework.web.socket.server.support.WebSocketHttpRequestHandler",
+				"org.springframework.web.socket.sockjs.transport.TransportHandlingSockJsService",
+				"org.springframework.web.socket.sockjs.transport.handler.DefaultSockJsService"
+		));
+
+
 		MessageSecurityPostProcessor(String inboundSecurityInterceptorId, boolean sameOriginDisabled) {
 			this.inboundSecurityInterceptorId = inboundSecurityInterceptorId;
 			this.sameOriginDisabled = sameOriginDisabled;
@@ -345,16 +350,7 @@ public final class WebSocketMessageBrokerSecurityBeanDefinitionParser implements
 						}
 					}
 				}
-				else if ("org.springframework.web.socket.server.support.WebSocketHttpRequestHandler"
-					.equals(beanClassName)) {
-					addCsrfTokenHandshakeInterceptor(bd);
-				}
-				else if ("org.springframework.web.socket.sockjs.transport.TransportHandlingSockJsService"
-					.equals(beanClassName)) {
-					addCsrfTokenHandshakeInterceptor(bd);
-				}
-				else if ("org.springframework.web.socket.sockjs.transport.handler.DefaultSockJsService"
-					.equals(beanClassName)) {
+				else if (CSRF_HANDSHAKE_HANDLER_CLASSES.contains(beanClassName)) {
 					addCsrfTokenHandshakeInterceptor(bd);
 				}
 			}
